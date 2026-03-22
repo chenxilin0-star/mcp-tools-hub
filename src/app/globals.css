@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #6366f1;
+  --secondary: #8b5cf6;
+}
+
+body {
+  @apply bg-gray-950 text-gray-100;
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:bg-white/10 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20;
+}
+
+.category-tag {
+  @apply px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary-300 border border-primary/30;
+}

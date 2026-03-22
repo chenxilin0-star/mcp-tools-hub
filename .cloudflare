@@ -1,0 +1,11 @@
+# Cloudflare Pages 配置
+# https://dash.cloudflare.com/pages
+
+## 构建设置
+- Build command: `npm run build`
+- Build output directory: `.next`
+- Environment variables:
+  - NODE_VERSION: 18
+
+## 路由规则
+所有页面静态生成，由CDN全球分发
