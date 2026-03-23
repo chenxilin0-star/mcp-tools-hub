@@ -34,3 +34,6 @@ next-env.d.ts
 
 # wrangler
 .wrangler
+.env
+.dev.vars
+.env.local

@@ -37,9 +37,9 @@ export async function fetchMCPTools(): Promise<MCPTool[]> {
     'Accept': 'application/vnd.github.v3+json',
   }
   
-  // 如果有token就添加
-  if (process.env.GITHUB_TOKEN) {
-    headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`
+  // 如果有token就添加 (优先用 GH_TOKEN 避免覆盖 GitHub Actions 的 GITHUB_TOKEN)
+  if (process.env.GH_TOKEN || process.env.GITHUB_TOKEN) {
+    headers['Authorization'] = `Bearer ${process.env.GH_TOKEN || process.env.GITHUB_TOKEN}`
   }
 
   const res = await fetch(url, { 
