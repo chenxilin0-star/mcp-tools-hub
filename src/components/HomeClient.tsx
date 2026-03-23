@@ -1,14 +1,19 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import Link from 'next/link'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import type { MCPTool } from '@/lib/mcp'
 
-interface Props {
-  tools: MCPTool[]
-  categories: { key: string; value: string }[]
-}
+const CATEGORIES = [
+  { key: 'database', value: '数据库' },
+  { key: 'file-system', value: '文件系统' },
+  { key: 'api', value: 'API' },
+  { key: 'ai', value: 'AI' },
+  { key: 'productivity', value: '效率' },
+  { key: 'other', value: '其他' },
+]
+
+const WORKER_URL = 'https://mcp-tools-api.chenxilin0.workers.dev/tools'
 
 function StarIcon() {
   return (
@@ -26,15 +31,33 @@ function SearchIcon() {
   )
 }
 
-export default function HomeClient({ tools, categories }: Props) {
+export default function HomeClient() {
+  const [tools, setTools] = useState<MCPTool[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [selectedCats, setSelectedCats] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<'stars' | 'name'>('stars')
 
+  useEffect(() => {
+    fetch(WORKER_URL)
+      .then(r => {
+        if (!r.ok) throw new Error('获取失败')
+        return r.json()
+      })
+      .then((data: MCPTool[]) => {
+        setTools(data)
+        setLoading(false)
+      })
+      .catch(e => {
+        setError(e.message)
+        setLoading(false)
+      })
+  }, [])
+
   const filtered = useMemo(() => {
     let result = tools
 
-    // 搜索过滤
     if (search) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -42,12 +65,10 @@ export default function HomeClient({ tools, categories }: Props) {
       )
     }
 
-    // 分类过滤
     if (selectedCats.length > 0) {
       result = result.filter(t => selectedCats.includes(t.category))
     }
 
-    // 排序
     result = [...result].sort((a, b) => {
       if (sortBy === 'stars') return b.stars - a.stars
       return a.name.localeCompare(b.name)
@@ -59,6 +80,28 @@ export default function HomeClient({ tools, categories }: Props) {
   const toggleCat = (cat: string) => {
     setSelectedCats(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    )
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">正在从 GitHub 加载最新工具...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-2">加载失败</p>
+          <p className="text-gray-500 text-sm">{error}</p>
+        </div>
+      </main>
     )
   }
 
@@ -85,9 +128,10 @@ export default function HomeClient({ tools, categories }: Props) {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* 搜索 + 筛选 */}
         <div className="mb-8 space-y-4">
-          {/* 搜索框 */}
           <div className="relative">
-            <SearchIcon />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+              <SearchIcon />
+            </div>
             <input
               type="text"
               placeholder="搜索工具名称或描述..."
@@ -95,15 +139,11 @@ export default function HomeClient({ tools, categories }: Props) {
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all"
             />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-              <SearchIcon />
-            </div>
           </div>
 
-          {/* 分类标签 + 排序 */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2">
-              {categories.map(cat => (
+              {CATEGORIES.map(cat => (
                 <button
                   key={cat.key}
                   onClick={() => toggleCat(cat.key)}
@@ -167,7 +207,7 @@ export default function HomeClient({ tools, categories }: Props) {
                   </p>
                   <div className="mt-3 flex items-center gap-2">
                     <span className="category-tag">
-                      {categories.find(c => c.key === tool.category)?.value || tool.category}
+                      {CATEGORIES.find(c => c.key === tool.category)?.value || tool.category}
                     </span>
                   </div>
                 </div>
@@ -187,7 +227,7 @@ export default function HomeClient({ tools, categories }: Props) {
       {/* Footer */}
       <footer className="border-t border-white/5 mt-20">
         <div className="max-w-7xl mx-auto px-6 py-8 text-center text-sm text-gray-500">
-          <p>MCP Tools Hub · 数据来源于 GitHub · 每6小时自动更新</p>
+          <p>MCP Tools Hub · 数据实时来源于 GitHub · 实时更新</p>
         </div>
       </footer>
     </main>
