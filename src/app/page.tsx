@@ -1,11 +1,11 @@
-import { fetchMCPTools, ALL_CATEGORIES } from '@/lib/mcp'
+import { fetchMCPTools, ALL_CATEGORIES, type MCPTool } from '@/lib/mcp'
 import HomeClient from '@/components/HomeClient'
 
 // ISR: 每6小时重新验证
 export const revalidate = 21600
 
 export default async function Home() {
-  let tools = []
+  let tools: MCPTool[] = []
   
   try {
     tools = await fetchMCPTools()
